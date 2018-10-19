@@ -1,3 +1,7 @@
+extern crate pancurses;
+
+use pancurses::{initscr, endwin};
+
 enum Vert {
     Up,
     Down,
@@ -100,9 +104,15 @@ fn main() {
         }
     };
 
+    let window = initscr();
+
     loop {
-        println!("{}", game);
+        window.clear();
+        window.printw(game.to_string());
+        window.refresh();
         game.step();
         std::thread::sleep(std::time::Duration::from_millis(30));
     }
+
+    endwin();
 }
