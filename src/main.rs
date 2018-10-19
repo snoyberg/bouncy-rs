@@ -1,6 +1,6 @@
 extern crate pancurses;
 
-use pancurses::{initscr, endwin};
+use pancurses::{initscr, endwin, Input};
 
 enum Vert {
     Up,
@@ -67,7 +67,7 @@ impl std::fmt::Display for Game {
             for _ in 0..self.frame.width {
                 write!(fmt, "-")?;
             }
-            write!(fmt, "+\n")
+            write!(fmt, "+\r")
         };
 
         top_bottom(fmt)?;
@@ -83,7 +83,7 @@ impl std::fmt::Display for Game {
                        };
                 write!(fmt, "{}", c)?;
             }
-            write!(fmt, "|\n")?;
+            write!(fmt, "|\r")?;
         }
 
         top_bottom(fmt)
@@ -91,27 +91,40 @@ impl std::fmt::Display for Game {
 }
 
 fn main() {
-    let mut game = Game {
-        frame: Frame {
-            width: 80,
-            height: 30,
-        },
-        ball: Ball {
-            x: 1,
-            y: 2,
-            horiz: Horiz::Left,
-            vert: Vert::Up,
+    let window = initscr();
+    window.timeout(30);
+
+    let new_game = || {
+        Game {
+            frame: Frame {
+                width: window.get_max_x() as u32 - 2,
+                height: window.get_max_y() as u32 - 2,
+            },
+            ball: Ball {
+                x: 1,
+                y: 2,
+                horiz: Horiz::Left,
+                vert: Vert::Up,
+            }
         }
     };
-
-    let window = initscr();
+    let mut game = new_game();
 
     loop {
+        match window.getch() {
+            Some(Input::Character('q')) => break,
+            Some(Input::KeyResize) => {
+                pancurses::resize_term(0, 0);
+                game = new_game();
+            },
+            _ => (),
+        }
+
         window.clear();
         window.printw(game.to_string());
         window.refresh();
+        window.mv(0, 0);
         game.step();
-        std::thread::sleep(std::time::Duration::from_millis(30));
     }
 
     endwin();
