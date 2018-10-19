@@ -60,36 +60,6 @@ impl Game {
     }
 }
 
-impl std::fmt::Display for Game {
-    fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
-        let top_bottom = |fmt: &mut std::fmt::Formatter| {
-            write!(fmt, "+")?;
-            for _ in 0..self.frame.width {
-                write!(fmt, "-")?;
-            }
-            write!(fmt, "+\r")
-        };
-
-        top_bottom(fmt)?;
-
-        for y in 0..self.frame.height {
-            write!(fmt, "|")?;
-            for x in 0..self.frame.width {
-                let c =
-                       if x == self.ball.x && y == self.ball.y {
-                           'o'
-                       } else {
-                           ' '
-                       };
-                write!(fmt, "{}", c)?;
-            }
-            write!(fmt, "|\r")?;
-        }
-
-        top_bottom(fmt)
-    }
-}
-
 fn main() {
     let window = initscr();
     window.timeout(30);
@@ -121,7 +91,17 @@ fn main() {
         }
 
         window.clear();
-        window.printw(game.to_string());
+        window.border(
+            '║',
+            '║',
+            '═',
+            '═',
+            '╔',
+            '╗',
+            '╚',
+            '╝'
+        );
+        window.mvaddch(game.ball.y as i32 + 1, game.ball.x as i32 + 1, 'o');
         window.refresh();
         window.mv(0, 0);
         game.step();
